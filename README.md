@@ -1,2 +1,3 @@
-# tx-explain-snap
-Code for metamask snap
+```shell
+yarn install && yarn start
+```
