@@ -1,3 +1,4 @@
+import { Maybe } from '@metamask/providers/dist/types/utils';
 import styled from 'styled-components';
 
 import {
@@ -6,6 +7,7 @@ import {
   ReconnectButton,
   SendHelloButton,
   Card,
+  SendTransactionButton,
 } from '../components';
 import { defaultSnapOrigin } from '../config';
 import {
@@ -114,13 +116,38 @@ const Index = () => {
     await invokeSnap({ method: 'hello' });
   };
 
+  const handleTransactionClick = async () => {
+    const accounts: Maybe<string[]> = await window.ethereum.request({
+      method: "eth_requestAccounts"
+    })
+    
+    if (accounts === undefined || accounts === null || accounts.length < 1) {
+      throw new Error ('Accounts not found')
+    }
+
+    try {
+      await window.ethereum.request({
+        method: "eth_sendTransaction",
+        params: [
+          {
+            from: accounts[0],
+            to: accounts[0],
+            value: '0'
+          },
+        ],
+      });
+    } catch {
+      // Handle rejected tx
+    }
+  }
+
   return (
     <Container>
       <Heading>
-        Welcome to <Span>template-snap</Span>
+        Welcome to <Span>Tx Explain</Span>
       </Heading>
       <Subtitle>
-        Get started by editing <code>src/index.ts</code>
+        Decode Your Transactions with AI
       </Subtitle>
       <CardContainer>
         {error && (
@@ -171,6 +198,25 @@ const Index = () => {
             disabled={!installedSnap}
           />
         )}
+        <Card
+          content={{
+            title: 'Send Transaction',
+            description:
+              'Read a summary of your transaction within the confirmation screen in MetaMask.',
+            button: (
+              <SendTransactionButton
+                onClick={handleTransactionClick}
+                disabled={!installedSnap}
+              />
+            ),
+          }}
+          disabled={!installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(installedSnap) &&
+            !shouldDisplayReconnectButton(installedSnap)
+          }
+        />
         <Card
           content={{
             title: 'Send Hello message',
